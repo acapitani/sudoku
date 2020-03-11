@@ -10,7 +10,7 @@ from command line:
 sudoku hard.txt
 
 sample input:
-
+--- | --- | ---
 003 | 020 | 600
 900 | 305 | 001
 
