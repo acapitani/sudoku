@@ -59,8 +59,8 @@ int FIFO_push(FIFO* f, STAGE* s)
 int FIFO_isempty(FIFO* f)
 {
   if (f->size>0)
-		return 0;
-	return 1;
+    return 0;
+  return 1;
 }
 
 STAGE* FIFO_pop(FIFO* f)
@@ -70,9 +70,9 @@ STAGE* FIFO_pop(FIFO* f)
   {
     s = f->head;
     f->head = (STAGE*)s->next;
-		if (f->head==NULL)
-			f->tail = NULL;
-		f->size--;
+    if (f->head==NULL)
+      f->tail = NULL;
+    f->size--;
 
   }
   return s;
@@ -85,13 +85,13 @@ STAGE* FIFO_head(FIFO* f)
 
 STAGE* FIFO_tail(FIFO* f)
 {
-	return f->tail;
+  return f->tail;
 }
 
 void FIFO_free(FIFO* f)
 {
-	while (!FIFO_isempty(f))
-		STAGE_free(FIFO_pop(f));
+  while (!FIFO_isempty(f))
+    STAGE_free(FIFO_pop(f));
 }
 
 STAGE* STAGE_dup(STAGE* s)
@@ -277,31 +277,31 @@ static int mask_prob(STAGE* s, int pos, BYTE v)
 static int mask_bits(STAGE* s, int pos, WORD bits)
 {
   WORD i;
-	int modified = 0;
-	for (i=0; i<9; i++)
-	{
-		if (bits&(1<<i))
-		{
-			if (s->cells[pos].prob&(1<<i))
-			{
-				modified = 1;
-				s->cells[pos].prob &= ~(1<<i);
-				s->cells[pos].tot--;		
-			}
-		}
-	}
-	if ((modified)&&(s->cells[pos].tot==1))
-	{
-		for (i=0; i<9; i++)
-		{
-			if (s->cells[pos].prob&(1<<i))
-			{
-				s->cells[pos].n = (BYTE)(i+1);
-				break;
-			}
-		}
-	}
-	return modified;
+  int modified = 0;
+  for (i=0; i<9; i++)
+  {
+    if (bits&(1<<i))
+    {
+      if (s->cells[pos].prob&(1<<i))
+      {
+        modified = 1;
+        s->cells[pos].prob &= ~(1<<i);
+        s->cells[pos].tot--;    
+      }
+    }
+  }
+  if ((modified)&&(s->cells[pos].tot==1))
+  {
+    for (i=0; i<9; i++)
+    {
+      if (s->cells[pos].prob&(1<<i))
+      {
+        s->cells[pos].n = (BYTE)(i+1);
+        break;
+      }
+    }
+  }
+  return modified;
 }
 
 int STAGE_process(STAGE* s)
@@ -311,7 +311,7 @@ int STAGE_process(STAGE* s)
   // applica le regole A, B ed eventualmente C
   // se modifica qualcosa, torna 1, altrimenti 0
   // per tutte le colonne
-	// regola A: caselle non definite
+  // regola A: caselle non definite
   int pos = 0;
   while (pos<NCELLS)
   {
@@ -326,40 +326,40 @@ int STAGE_process(STAGE* s)
         {
           BYTE v = s->cells[(r*NCOLS)+cc].n;
           if (v)
-					{
+          {
             if (mask_prob(s, pos, v))
-							modified = 1;
-					}
+              modified = 1;
+          }
         }
       }
       // righe
-			for (rr=0; rr<NROWS; rr++)
+      for (rr=0; rr<NROWS; rr++)
       {
         if (rr!=r)
         {
           BYTE v = s->cells[(rr*NCOLS)+c].n;
           if (v)
-					{
+          {
             if (mask_prob(s, pos, v))
-							modified = 1;
-					}
+              modified = 1;
+          }
         }
       }
-			// blocco
-			bc = (c/3)*3;
-			br = (r/3)*3;
-			for (rr=br; rr<(br+3); rr++)
+      // blocco
+      bc = (c/3)*3;
+      br = (r/3)*3;
+      for (rr=br; rr<(br+3); rr++)
       {
         for (cc=bc; cc<(bc+3); cc++)
         {
           if ((rr==r)&&(cc==c))
-						continue;
-					BYTE v = s->cells[(rr*NCOLS)+cc].n;
+            continue;
+          BYTE v = s->cells[(rr*NCOLS)+cc].n;
           if (v)
-					{
+          {
             if (mask_prob(s, pos, v))
-							modified = 1;
-					}
+              modified = 1;
+          }
         }
       }
     }
@@ -372,45 +372,45 @@ int STAGE_process(STAGE* s)
     if (s->cells[pos].n)
     {
       int n = s->cells[pos].n;
-			c = pos % NCOLS;
+      c = pos % NCOLS;
       r = pos / NCOLS;
       // colonne
       for (cc=0; cc<NCOLS; cc++)
       {
         pp = (r*NCOLS)+cc;
-				if (s->cells[pp].n==0)
+        if (s->cells[pp].n==0)
         {
           if (mask_prob(s, pp, n))
-						modified = 1;
-			  }
+            modified = 1;
+        }
       }
       // righe
-			for (rr=0; rr<NROWS; rr++)
+      for (rr=0; rr<NROWS; rr++)
       {
         pp = (rr*NCOLS)+c;  
-				BYTE v = s->cells[pp].n;
+        BYTE v = s->cells[pp].n;
         if (v)
-				{
+        {
           if (mask_prob(s, pp, v))
-						modified = 1;
-				}
+            modified = 1;
+        }
       }
-			// blocco
-			bc = (c/3)*3;
-			br = (r/3)*3;
-			for (rr=br; rr<(br+3); rr++)
+      // blocco
+      bc = (c/3)*3;
+      br = (r/3)*3;
+      for (rr=br; rr<(br+3); rr++)
       {
         for (cc=bc; cc<(bc+3); cc++)
         {
           if ((rr==r)&&(cc==c))
-						continue;
-					pp = (rr*NCOLS)+cc;  
-					BYTE v = s->cells[pp].n;
+            continue;
+          pp = (rr*NCOLS)+cc;  
+          BYTE v = s->cells[pp].n;
           if (v)
-					{
+          {
             if (mask_prob(s, pp, v))
-							modified = 1;
-					}
+              modified = 1;
+          }
         }
       }
     }
@@ -420,71 +420,71 @@ int STAGE_process(STAGE* s)
   if ((0)&&(!modified))
   {
     CELL cells[9]; 
-		// regola C: esclusione di coppie (tutti quelli che hanno tot==2 nello stesso blocco e sono uguali sulla stessa riga o colonna)
-		for (br=0; br<NROWS; br+=3)
-		{
-			for (bc=0; bc<NCOLS; bc+=3)
-			{
-				pos=0;
-				for (r=br; r<(br+3); r++)
-				{
-					for (c=bc; c<(bc+3); c++)
-					{
-						cells[pos++] = s->cells[(r*NCOLS)+c];
-					}
-				}
-				int i=0;
-				while (i<8)
-				{
-					if ((cells[i].tot==2)&&(cells[i].n==0))
-					{
-						int j=i+1;
-						while (j<9)
-						{
-							if ((cells[j].tot==2)&&(cells[j].n==0)&&(cells[j].prob==cells[i].prob))
-							{
-								int pos1=((br+(i/3))*NCOLS)+(bc+(i%3));
-								int pos2=((br+(j/3))*NCOLS)+(bc+(j%3));
-								// verifica se sono sulla stessa colonna o stessa riga
-								if ((i/3)==(j/3))
-								{
-									//stessa riga
-									int row = br+(i/3);
-									for (int x=0; x<NCOLS; x++)
-									{
-										int pp=(row*NCOLS)+x;
-										if ((pp!=pos1)&&(pp!=pos2))
-										{
-											if (mask_bits(s, pp, cells[i].prob))
-												modified = 1;
-										}
-									}
-								}
-								else if ((i%3)==(j%3))
-								{
-									// stessa colonna
-									int col = bc+(i%3);
-									for (int x=0; x<NROWS; x++)
-									{
-										int pp=(x*NCOLS)+col;
-										if ((pp!=pos1)&&(pp!=pos2))
-										{
-											if (mask_bits(s, pp, cells[i].prob))
-												modified = 1;
-										}
-									}
-								}
-								break;
-							}
-							j++;
-						}
-						i=j+1;
-					}
-					else
-						i++;
-				}
-			}
-		}
+    // regola C: esclusione di coppie (tutti quelli che hanno tot==2 nello stesso blocco e sono uguali sulla stessa riga o colonna)
+    for (br=0; br<NROWS; br+=3)
+    {
+      for (bc=0; bc<NCOLS; bc+=3)
+      {
+        pos=0;
+        for (r=br; r<(br+3); r++)
+        {
+          for (c=bc; c<(bc+3); c++)
+          {
+            cells[pos++] = s->cells[(r*NCOLS)+c];
+          }
+        }
+        int i=0;
+        while (i<8)
+        {
+          if ((cells[i].tot==2)&&(cells[i].n==0))
+          {
+            int j=i+1;
+            while (j<9)
+            {
+              if ((cells[j].tot==2)&&(cells[j].n==0)&&(cells[j].prob==cells[i].prob))
+              {
+                int pos1=((br+(i/3))*NCOLS)+(bc+(i%3));
+                int pos2=((br+(j/3))*NCOLS)+(bc+(j%3));
+                // verifica se sono sulla stessa colonna o stessa riga
+                if ((i/3)==(j/3))
+                {
+                  //stessa riga
+                  int row = br+(i/3);
+                  for (int x=0; x<NCOLS; x++)
+                  {
+                    int pp=(row*NCOLS)+x;
+                    if ((pp!=pos1)&&(pp!=pos2))
+                    {
+                      if (mask_bits(s, pp, cells[i].prob))
+                        modified = 1;
+                    }
+                  }
+                }
+                else if ((i%3)==(j%3))
+                {
+                  // stessa colonna
+                  int col = bc+(i%3);
+                  for (int x=0; x<NROWS; x++)
+                  {
+                    int pp=(x*NCOLS)+col;
+                    if ((pp!=pos1)&&(pp!=pos2))
+                    {
+                      if (mask_bits(s, pp, cells[i].prob))
+                        modified = 1;
+                    }
+                  }
+                }
+                break;
+              }
+              j++;
+            }
+            i=j+1;
+          }
+          else
+            i++;
+        }
+      }
+    }
   }
   return modified;
 }
@@ -522,13 +522,13 @@ int STAGE_expand(STAGE* s, FIFO* f)
 int main(int argc, char* argv[])
 {
   if (argc<2)
-	{
-		printf("usage: sudoku filename\n");
-		return 0;
-	}
-	
-	int completed =0;
-	int modified;
+  {
+    printf("usage: sudoku filename\n");
+    return 0;
+  }
+  
+  int completed =0;
+  int modified;
   int check = STAGE_INCOMPLETE;
   FIFO fifo;
   FIFO_reset(&fifo);
@@ -537,36 +537,36 @@ int main(int argc, char* argv[])
   for (int i = 0; i < tot; i++)
   {
     if (i==9)
-		{
-			int b=0;
-		}
-		STAGE* stage = STAGE_dup(stages[i]);
-		printf("STAGE:\n");
-		STAGE_dump(stage);
+    {
+      int b=0;
+    }
+    STAGE* stage = STAGE_dup(stages[i]);
+    printf("STAGE:\n");
+    STAGE_dump(stage);
     FIFO_push(&fifo, stage);
     while (!FIFO_isempty(&fifo))
     {
       stage = FIFO_head(&fifo);
       modified = STAGE_process(stage);
-			//STAGE_dump(stage);
+      //STAGE_dump(stage);
       check = STAGE_check(stage);
       if (check==STAGE_COMPLETE)
-			{
+      {
         completed++;
-				printf("COMPLETED:\n");
-				STAGE_dump(stage);
-				FIFO_free(&fifo);
-				break;
-			}
+        printf("COMPLETED:\n");
+        STAGE_dump(stage);
+        FIFO_free(&fifo);
+        break;
+      }
       else if (check==STAGE_INVALID)
       {
         FIFO_pop(&fifo);
-				if (FIFO_isempty(&fifo))
-				{
-					printf("INVALID: %d\n", i);
-				}
-				STAGE_free(stage);
-			}
+        if (FIFO_isempty(&fifo))
+        {
+          printf("INVALID: %d\n", i);
+        }
+        STAGE_free(stage);
+      }
       else if (modified)
         continue;
       else
@@ -577,7 +577,7 @@ int main(int argc, char* argv[])
       }
     }
   }
-	printf("\nprocessed: %d, completed: %d\n", tot, completed);
+  printf("\nprocessed: %d, completed: %d\n", tot, completed);
   STAGES_unload();
   return 0;
 }
